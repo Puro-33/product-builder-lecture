@@ -1,6 +1,7 @@
 :root {
     /* Color Palette */
-    --accent-color: #007bff;
+    --accent-color-light: #007bff;
+    --accent-color-dark: #58a6ff; /* Lighter blue for dark mode */
     --text-color-light: #212529;
     --bg-color-light: #ffffff;
     --secondary-bg-light: #f8f9fa;
@@ -43,6 +44,7 @@ body[data-theme='light'] {
     --bg-color: var(--bg-color-light);
     --secondary-bg-color: var(--secondary-bg-light);
     --border-color: var(--border-color-light);
+    --accent-color: var(--accent-color-light);
 }
 
 body[data-theme='dark'] {
@@ -50,6 +52,7 @@ body[data-theme='dark'] {
     --bg-color: var(--bg-color-dark);
     --secondary-bg-color: var(--secondary-bg-dark);
     --border-color: var(--border-color-dark);
+    --accent-color: var(--accent-color-dark);
 }
 
 body {
