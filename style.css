@@ -1,1 +1,64 @@
-/* Add styles here */
+
+:root {
+    --background-color: #1a1a1a;
+    --text-color: #f0f0f0;
+    --accent-color: #4caf50;
+    --ball-size: 50px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-image: linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+                      linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+                      linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+    background-size: 20px 20px;
+}
+
+.app {
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(42, 42, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+.lotto-numbers-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.generate-button {
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px var(--accent-color), inset 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+.generate-button:hover, .generate-button:focus {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px var(--accent-color), inset 0 0 10px rgba(255, 255, 255, 0.5);
+}
