@@ -66,3 +66,35 @@ function getBallColor(number) {
     if (number <= 40) return '#aaa'; // Gray
     return '#b0d840'; // Green
 }
+
+// --- Theme Toggle ---
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const body = document.body;
+
+function applyTheme(theme) {
+    if (theme === 'light') {
+        body.dataset.theme = 'light';
+        themeToggleBtn.textContent = '☀️';
+    } else {
+        delete body.dataset.theme;
+        themeToggleBtn.textContent = '🌙';
+    }
+}
+
+themeToggleBtn.addEventListener('click', () => {
+    let newTheme = body.dataset.theme === 'light' ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
+    applyTheme(newTheme);
+});
+
+// Apply saved theme or system preference on load
+const savedTheme = localStorage.getItem('theme');
+const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (savedTheme) {
+    applyTheme(savedTheme);
+} else if (prefersDark) {
+    applyTheme('dark');
+} else {
+    applyTheme('light');
+}
