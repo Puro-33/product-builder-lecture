@@ -20,12 +20,11 @@
         applyTheme(newTheme);
     });
 
-    // Apply saved theme on load
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         applyTheme(savedTheme);
     } else {
-        applyTheme('dark'); // Default to dark
+        applyTheme('dark');
     }
 })();
 
@@ -52,7 +51,8 @@
     
     const foodInput = document.getElementById('food-input');
     const imageContainer = document.getElementById('food-image-container');
-    const foodGeneratedImageUrl = 'https://images.pexels.com/photos/3026806/pexels-photo-3026806.jpeg';
+    const toolCard = document.getElementById('food-generator');
+    const promptDisplay = toolCard.querySelector('.prompt-display');
 
     foodGenerateBtn.addEventListener('click', () => {
         const foodName = foodInput.value;
@@ -61,14 +61,24 @@
             return;
         }
 
-        imageContainer.innerHTML = '<div class="loading-spinner"></div>'; // Show spinner
+        const spinner = imageContainer.querySelector('.loading-spinner');
+        const image = imageContainer.querySelector('img');
+
+        spinner.style.display = 'block';
+        image.style.display = 'none';
+        promptDisplay.style.display = 'none';
 
         setTimeout(() => {
-            const img = document.createElement('img');
-            img.src = foodGeneratedImageUrl;
-            img.alt = `${foodName} 이미지`;
-            imageContainer.innerHTML = '';
-            imageContainer.appendChild(img);
+            const randomImageUrl = `https://picsum.photos/400/300?random=${Math.random()}`;
+            image.src = randomImageUrl;
+            image.alt = `${foodName} 이미지`;
+            
+            image.onload = () => {
+                spinner.style.display = 'none';
+                image.style.display = 'block';
+                promptDisplay.innerHTML = `<span>Prompt:</span> "${foodName}"`;
+                promptDisplay.style.display = 'block';
+            };
         }, 1500);
     });
 })();
@@ -127,7 +137,6 @@ async function tm_predict() {
     }
 }
 
-// Attach event listener
 const tmStartBtn = document.getElementById('tm-start-btn');
 if (tmStartBtn) {
     tmStartBtn.addEventListener('click', tm_init);

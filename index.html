@@ -55,7 +55,11 @@
                             <input type="text" id="food-input" placeholder="예: Pizza, Sushi...">
                             <button id="food-generate-btn" class="generate-button">생성</button>
                         </div>
-                        <div id="food-image-container" class="image-container"></div>
+                        <div id="food-image-container" class="image-container">
+                            <div class="loading-spinner" style="display: none;"></div>
+                            <img src="" alt="생성된 음식 이미지" style="display: none;">
+                        </div>
+                        <div class="prompt-display"></div>
                     </div>
                     <!-- Animal Face Test -->
                     <div class="tool-card" id="animal-test">
