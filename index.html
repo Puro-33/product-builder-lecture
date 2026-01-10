@@ -3,22 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>동물상 테스트</title>
+    <title>동물상 테스트 (웹캠 버전)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>동물상 테스트</h1>
-        <p>얼굴 사진을 업로드하여 어떤 동물상인지 확인해보세요!</p>
-        
-        <div class="upload-container">
-            <input type="file" id="image-upload" accept="image/*">
-            <label for="image-upload" class="upload-label">이미지 선택</label>
-        </div>
-
-        <div id="image-preview-container" class="image-preview"></div>
+        <h1>Teachable Machine 동물상 테스트</h1>
+        <p>"Start" 버튼을 누르고 웹캠에 얼굴을 비춰보세요.</p>
+        <button type="button" onclick="init()">Start</button>
+        <div id="webcam-container"></div>
         <div id="label-container"></div>
-        
+
         <div class="model-notice">
             <strong>참고:</strong> 이 앱이 작동하려면, 'my_model' 폴더에 Teachable Machine에서 내보낸 <code>model.json</code> 및 <code>metadata.json</code> 파일이 있어야 합니다.
         </div>
@@ -27,51 +22,52 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script type="text/javascript">
+        // the link to your model provided by Teachable Machine export panel
         const URL = "./my_model/";
-        let model, labelContainer, maxPredictions;
 
-        const imageUpload = document.getElementById("image-upload");
-        const imagePreviewContainer = document.getElementById("image-preview-container");
+        let model, webcam, labelContainer, maxPredictions;
 
-        imageUpload.addEventListener("change", async (event) => {
-            if (event.target.files && event.target.files[0]) {
-                const imageFile = event.target.files[0];
-                const image = document.createElement("img");
-                image.src = URL.createObjectURL(imageFile);
-                image.onload = async () => {
-                    imagePreviewContainer.innerHTML = ''; // Clear previous image
-                    imagePreviewContainer.appendChild(image);
-                    
-                    // Initialize and predict
-                    await initAndPredict(image);
-                };
-            }
-        });
-
-        async function initAndPredict(imageElement) {
+        // Load the image model and setup the webcam
+        async function init() {
             const modelURL = URL + "model.json";
             const metadataURL = URL + "metadata.json";
 
             try {
+                // load the model and metadata
                 model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
 
+                // Convenience function to setup a webcam
+                const flip = true; // whether to flip the webcam
+                webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+                await webcam.setup(); // request access to the webcam
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+
+                // append elements to the DOM
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
                 labelContainer = document.getElementById("label-container");
-                labelContainer.innerHTML = ''; // Clear previous labels
-                for (let i = 0; i < maxPredictions; i++) {
+                for (let i = 0; i < maxPredictions; i++) { // and class labels
                     labelContainer.appendChild(document.createElement("div"));
                 }
-                
-                await predict(imageElement);
-
             } catch (error) {
                 console.error("Error loading or running the model:", error);
-                labelContainer.innerHTML = "모델을 로드하는 데 실패했습니다. 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
+                document.getElementById("label-container").innerHTML = "모델을 로드하는 데 실패했습니다. 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
             }
         }
 
-        async function predict(imageElement) {
-            const prediction = await model.predict(imageElement);
+        async function loop() {
+            if (webcam.canvas) {
+                webcam.update(); // update the webcam frame
+                await predict();
+                window.requestAnimationFrame(loop);
+            }
+        }
+
+        // run the webcam image through the image model
+        async function predict() {
+            // predict can take in an image, video or canvas html element
+            const prediction = await model.predict(webcam.canvas);
             for (let i = 0; i < maxPredictions; i++) {
                 const classPrediction =
                     prediction[i].className + ": " + prediction[i].probability.toFixed(2);
