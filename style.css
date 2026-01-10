@@ -1,7 +1,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: #1c1e21;
+    background-color: var(--background-color);
+    color: var(--text-color);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,53 +9,195 @@ body {
     margin: 0;
     padding: 1rem;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.container {
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
+:root {
+    /* Dark Theme Variables */
+    --background-color-dark: #1a1a1a;
+    --text-color-dark: #f0f0f0;
+    --app-bg-dark: rgba(42, 42, 42, 0.8);
+    --background-pattern-dark: #2a2a2a;
+    --input-bg-dark: #333;
+    --accent-color-dark: #007bff;
+
+    /* Light Theme Variables */
+    --background-color-light: #f0f0f0;
+    --text-color-light: #1a1a1a;
+    --app-bg-light: rgba(255, 255, 255, 0.9);
+    --background-pattern-light: #ddd;
+    --input-bg-light: #fff;
+    --accent-color-light: #007bff; /* Keeping accent color consistent for now */
+
+    /* General Variables */
+    --accent-color: var(--accent-color-dark); /* Default to dark theme accent */
+    --button-text-color: #fff;
+}
+
+body {
+    --background-color: var(--background-color-dark);
+    --text-color: var(--text-color-dark);
+    --app-bg: var(--app-bg-dark);
+    --background-pattern: var(--background-pattern-dark);
+    --input-bg: var(--input-bg-dark);
+    --accent-color: var(--accent-color-dark);
+
+    background-image: linear-gradient(45deg, var(--background-pattern) 25%, transparent 25%),
+                      linear-gradient(-45deg, var(--background-pattern) 25%, transparent 25%),
+                      linear-gradient(45deg, transparent 75%, var(--background-pattern) 75%),
+                      linear-gradient(-45deg, transparent 75%, var(--background-pattern) 75%);
+    background-size: 20px 20px;
+}
+
+body[data-theme='light'] {
+    --background-color: var(--background-color-light);
+    --text-color: var(--text-color-light);
+    --app-bg: var(--app-bg-light);
+    --background-pattern: var(--background-pattern-light);
+    --input-bg: var(--input-bg-light);
+    --accent-color: var(--accent-color-light);
+}
+
+.app {
+    background-color: var(--app-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 500px;
+    max-width: 700px; /* Increased max-width for multiple sections */
+    padding: 2rem;
+    box-sizing: border-box;
 }
 
-h1 {
-    font-size: 1.8rem;
-    color: #007bff;
-    margin-bottom: 0.5rem;
-}
-
-p {
-    margin-bottom: 1.5rem;
-    color: #606770;
-}
-
-button {
-    background-color: #007bff;
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
+.theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
     cursor: pointer;
-    font-weight: bold;
-    border: none;
+    border-radius: 5px;
+    padding: 0.5rem;
+    z-index: 10; /* Ensure it's above other elements */
+}
+
+/* Common Section Styling */
+.app-section {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+}
+
+.app-section:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+h1, .app-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+.app-section p {
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+/* Input and Button Styles (Shared) */
+.input-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    justify-content: center; /* Center for food image generator */
+}
+
+input[type="text"] {
+    flex-grow: 1;
+    max-width: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    padding: 0.8rem 1.2rem;
     font-size: 1rem;
-    margin-bottom: 1rem;
-    transition: background-color 0.3s ease;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
-button:hover {
-    background-color: #0056b3;
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-color);
 }
 
+.generate-button, button[type="button"] { /* Apply to both types of buttons */
+    background-color: var(--accent-color);
+    color: var(--button-text-color);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
+.generate-button:hover, .generate-button:focus,
+button[type="button"]:hover, button[type="button"]:focus {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px var(--accent-color);
+}
+
+/* Image Container (Shared) */
+.image-container {
+    width: 100%;
+    min-height: 200px;
+    background-color: var(--input-bg);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 1.5rem auto; /* Center and add margin */
+    max-width: 400px;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+/* Loading Spinner (Shared) */
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid var(--accent-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Teachable Machine Specifics */
 #webcam-container {
-    margin: 1rem auto;
     width: 200px;
     height: 200px;
     border: 2px dashed #ddd;
     border-radius: 8px;
     overflow: hidden;
+    margin: 1rem auto; /* Center */
 }
 
 #label-container {
@@ -68,9 +210,10 @@ button:hover {
 }
 
 #label-container div {
-    background-color: #e9ecef;
+    background-color: var(--input-bg);
     padding: 0.8rem;
     border-radius: 8px;
+    color: var(--text-color);
 }
 
 .model-notice {
@@ -82,4 +225,72 @@ button:hover {
     color: #8a6d3b;
     font-size: 0.9rem;
     text-align: left;
+}
+
+/* Contact Form Specifics */
+.contact-form-section {
+    padding-top: 2.5rem; /* Adjust padding for border-top */
+}
+
+.contact-form-section h2 {
+    margin-bottom: 1.5rem;
+}
+
+.contact-form-section form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+    max-width: 400px;
+    margin: 0 auto; /* Center form */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group textarea {
+    padding: 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-color);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.contact-form-section .generate-button {
+    align-self: flex-end;
+    margin-top: 1rem;
+}
+
+/* Comments Section Specifics */
+.comments-section {
+    padding-top: 2.5rem; /* Adjust padding for border-top */
+}
+
+.comments-section h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
 }

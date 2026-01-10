@@ -3,77 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>동물상 테스트 (웹캠 버전)</title>
+    <title>통합 서비스 웹사이트</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Teachable Machine 동물상 테스트</h1>
-        <p>"Start" 버튼을 누르고 웹캠에 얼굴을 비춰보세요.</p>
-        <button type="button" onclick="init()">Start</button>
-        <div id="webcam-container"></div>
-        <div id="label-container"></div>
+<body data-theme="dark">
+    <main class="app">
+        <button id="theme-toggle-btn" class="theme-toggle">🌙</button>
+        
+        <!-- Section 1: AI Food Image Generator -->
+        <section class="app-section">
+            <h1>AI Food Image Generator</h1>
+            <p>음식 이름을 입력하여 이미지를 "생성"해보세요!</p>
+            
+            <div class="input-container">
+                <input type="text" id="food-input" placeholder="예: Pizza, Sushi, Banana...">
+                <button id="food-generate-btn" class="generate-button">이미지 생성</button>
+            </div>
 
-        <div class="model-notice">
-            <strong>참고:</strong> 이 앱이 작동하려면, 'my_model' 폴더에 Teachable Machine에서 내보낸 <code>model.json</code> 및 <code>metadata.json</code> 파일이 있어야 합니다.
-        </div>
-    </div>
+            <div id="food-image-container" class="image-container">
+                <div id="food-loading-spinner" class="loading-spinner" style="display: none;"></div>
+                <img id="food-image-display" src="" alt="생성된 음식 이미지" style="display: none;">
+            </div>
+        </section>
 
+        <!-- Section 2: Teachable Machine Animal Face Test -->
+        <section class="app-section">
+            <h2>동물상 테스트</h2>
+            <p>"Start" 버튼을 누르고 웹캠에 얼굴을 비춰보세요.</p>
+            <button type="button" id="tm-start-btn">Start</button>
+            <div id="webcam-container"></div>
+            <div id="label-container"></div>
+
+            <div class="model-notice">
+                <strong>참고:</strong> 이 앱이 작동하려면, 'my_model' 폴더에 Teachable Machine에서 내보낸 <code>model.json</code> 및 <code>metadata.json</code> 파일이 있어야 합니다.
+            </div>
+        </section>
+
+        <!-- Section 3: Partnership Inquiry Form -->
+        <section class="app-section contact-form-section">
+            <h2>제휴 문의</h2>
+            <form action="https://formspree.io/f/xdaandjj" method="POST">
+                <div class="form-group">
+                    <label for="name">이름:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">이메일:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="message">메시지:</label>
+                    <textarea id="message" name="message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="generate-button">문의 보내기</button>
+            </form>
+        </section>
+
+        <!-- Section 4: Comments -->
+        <section class="app-section comments-section">
+            <h2>댓글</h2>
+            <div id="disqus_thread"></div>
+            <script>
+                // Disqus Universal Embed Code
+                var disqus_config = function () {
+                this.page.url = window.location.href;
+                this.page.identifier = 'integrated-app-v1';
+                };
+                (function() {
+                    var d = document, s = d.createElement('script');
+                    s.src = 'https://https-product-builder-lecture-aua-pages-dev.disqus.com/embed.js';
+                    s.setAttribute('data-timestamp', +new Date());
+                    (d.head || d.body).appendChild(s);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+            <script id="dsq-count-scr" src="//https-product-builder-lecture-aua-pages-dev.disqus.com/count.js" async></script>
+        </section>
+    </main>
+
+    <!-- Teachable Machine Scripts - Kept inline as per user's preference -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script type="text/javascript">
-        // the link to your model provided by Teachable Machine export panel
-        const URL = "./my_model/";
+        const TM_URL = "./my_model/"; // Renamed to avoid conflict with Food Generator's URL var
 
-        let model, webcam, labelContainer, maxPredictions;
+        let tm_model, tm_webcam, tm_labelContainer, tm_maxPredictions;
 
-        // Load the image model and setup the webcam
-        async function init() {
-            const modelURL = URL + "model.json";
-            const metadataURL = URL + "metadata.json";
+        async function tm_init() {
+            const modelURL = TM_URL + "model.json";
+            const metadataURL = TM_URL + "metadata.json";
 
             try {
-                // load the model and metadata
-                model = await tmImage.load(modelURL, metadataURL);
-                maxPredictions = model.getTotalClasses();
+                tm_model = await tmImage.load(modelURL, metadataURL);
+                tm_maxPredictions = tm_model.getTotalClasses();
 
-                // Convenience function to setup a webcam
-                const flip = true; // whether to flip the webcam
-                webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-                await webcam.setup(); // request access to the webcam
-                await webcam.play();
-                window.requestAnimationFrame(loop);
+                const flip = true;
+                tm_webcam = new tmImage.Webcam(200, 200, flip);
+                await tm_webcam.setup();
+                await tm_webcam.play();
+                window.requestAnimationFrame(tm_loop);
 
-                // append elements to the DOM
-                document.getElementById("webcam-container").appendChild(webcam.canvas);
-                labelContainer = document.getElementById("label-container");
-                for (let i = 0; i < maxPredictions; i++) { // and class labels
-                    labelContainer.appendChild(document.createElement("div"));
+                document.getElementById("webcam-container").innerHTML = ''; // Clear existing content
+                document.getElementById("webcam-container").appendChild(tm_webcam.canvas);
+                tm_labelContainer = document.getElementById("label-container");
+                tm_labelContainer.innerHTML = ''; // Clear existing content
+                for (let i = 0; i < tm_maxPredictions; i++) {
+                    tm_labelContainer.appendChild(document.createElement("div"));
                 }
             } catch (error) {
-                console.error("Error loading or running the model:", error);
-                document.getElementById("label-container").innerHTML = "모델을 로드하는 데 실패했습니다. 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
+                console.error("Error loading or running the Teachable Machine model:", error);
+                document.getElementById("label-container").innerHTML = "모델 로드 실패: 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
             }
         }
 
-        async function loop() {
-            if (webcam.canvas) {
-                webcam.update(); // update the webcam frame
-                await predict();
-                window.requestAnimationFrame(loop);
+        async function tm_loop() {
+            if (tm_webcam && tm_webcam.canvas) {
+                tm_webcam.update();
+                await tm_predict();
+                window.requestAnimationFrame(tm_loop);
             }
         }
 
-        // run the webcam image through the image model
-        async function predict() {
-            // predict can take in an image, video or canvas html element
-            const prediction = await model.predict(webcam.canvas);
-            for (let i = 0; i < maxPredictions; i++) {
-                const classPrediction =
-                    prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-                labelContainer.childNodes[i].innerHTML = classPrediction;
+        async function tm_predict() {
+            if (tm_model && tm_webcam.canvas) {
+                const prediction = await tm_model.predict(tm_webcam.canvas);
+                for (let i = 0; i < tm_maxPredictions; i++) {
+                    const classPrediction =
+                        prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                    tm_labelContainer.childNodes[i].innerHTML = classPrediction;
+                }
             }
         }
+
+        // Attach event listener for Teachable Machine start button
+        document.getElementById('tm-start-btn').addEventListener('click', tm_init);
     </script>
+
+    <script src="main.js" type="module"></script>
 </body>
 </html>
