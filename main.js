@@ -9,7 +9,7 @@
             body.dataset.theme = 'light';
             themeToggleBtn.textContent = '☀️';
         } else {
-            delete body.dataset.theme;
+            body.dataset.theme = 'dark'; // Explicitly set dark theme
             themeToggleBtn.textContent = '🌙';
         }
     }
@@ -28,7 +28,7 @@
     } else if (prefersDark) {
         applyTheme('dark');
     } else {
-        applyTheme('light'); // Default to light for better initial readability
+        applyTheme('light');
     }
 })();
 
@@ -71,29 +71,33 @@
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start' // Scroll to the top of the element
+                // Manually calculate offset to account for fixed header
+                const header = document.querySelector('.site-header');
+                const headerHeight = header ? header.offsetHeight : 0;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
                 });
-                // Optional: Update URL hash without jumping
                 history.pushState(null, null, targetId);
             }
         });
     });
 })();
 
-// --- Dynamic Header Padding ---
+// --- Dynamic Header Offset ---
 (function() {
     const header = document.querySelector('.site-header');
-    if (!header) return;
+    const mainContent = document.querySelector('.app'); // Target the main content container
+    if (!header || !mainContent) return;
 
-    function adjustBodyPadding() {
+    function adjustMainContentMargin() {
         const headerHeight = header.offsetHeight;
-        document.body.style.paddingTop = `${headerHeight}px`;
+        mainContent.style.marginTop = `${headerHeight}px`; // Use margin-top on the main content
     }
 
-    // Adjust on initial load
-    window.addEventListener('DOMContentLoaded', adjustBodyPadding);
-    // Adjust on window resize (for nav wrapping)
-    window.addEventListener('resize', adjustBodyPadding);
+    // Adjust on initial load and on resize
+    window.addEventListener('load', adjustMainContentMargin);
+    window.addEventListener('resize', adjustMainContentMargin);
 })();

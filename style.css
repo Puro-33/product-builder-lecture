@@ -7,9 +7,9 @@
     --secondary-bg-light: #f8f9fa;
     --text-color-dark: #f8f9fa;
     --bg-color-dark: #212529;
-    --secondary-bg-dark: #343a40;
+    --secondary-bg-dark: #2a2c2f; /* Darker than before */
     --border-color-light: #dee2e6;
-    --border-color-dark: #495057;
+    --border-color-dark: #404245; /* Darker and more subtle */
 
     /* Typography */
     --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -34,7 +34,7 @@ body {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-base);
     margin: 0;
-    /* padding-top is now set by JavaScript */
+    /* padding-top is now dynamically set by JavaScript to avoid overlap */
     transition: background-color 0.3s ease, color 0.3s ease;
     scroll-behavior: smooth;
 }
