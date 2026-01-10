@@ -4,14 +4,15 @@
     --text-color-dark: #f0f0f0;
     --app-bg-dark: rgba(42, 42, 42, 0.8);
     --background-pattern-dark: #2a2a2a;
+    --input-bg-dark: #333;
 
     --background-color-light: #f0f0f0;
     --text-color-light: #1a1a1a;
     --app-bg-light: rgba(255, 255, 255, 0.7);
     --background-pattern-light: #ddd;
+    --input-bg-light: #fff;
 
-    --accent-color: #4caf50;
-    --ball-size: 50px;
+    --accent-color: #007bff;
 }
 
 body {
@@ -19,6 +20,7 @@ body {
     --text-color: var(--text-color-dark);
     --app-bg: var(--app-bg-dark);
     --background-pattern: var(--background-pattern-dark);
+    --input-bg: var(--input-bg-dark);
 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--background-color);
@@ -41,6 +43,7 @@ body[data-theme='light'] {
     --text-color: var(--text-color-light);
     --app-bg: var(--app-bg-light);
     --background-pattern: var(--background-pattern-light);
+    --input-bg: var(--input-bg-light);
 }
 
 .app {
@@ -50,38 +53,93 @@ body[data-theme='light'] {
     backdrop-filter: blur(10px);
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 500px;
 }
 
 h1 {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
     color: var(--accent-color);
     text-shadow: 0 0 10px var(--accent-color);
 }
 
-.lotto-numbers-container {
+p {
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+.input-container {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+#food-input {
+    flex-grow: 1;
+    border: 1px solid transparent;
+    border-radius: 50px;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+#food-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--accent-color);
 }
 
 .generate-button {
     background-color: var(--accent-color);
-    color: var(--text-color);
+    color: #fff;
     border: none;
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 0 15px var(--accent-color), inset 0 0 5px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px var(--accent-color);
 }
 
 .generate-button:hover, .generate-button:focus {
     transform: scale(1.05);
-    box-shadow: 0 0 25px var(--accent-color), inset 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 25px var(--accent-color);
+}
+
+.image-container {
+    width: 100%;
+    min-height: 300px;
+    background-color: var(--input-bg);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+#food-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.loading-spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid var(--accent-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .theme-toggle {

@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotto Number Generator</title>
+    <title>AI Food Image Generator</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="dark">
     <main class="app">
         <button id="theme-toggle-btn" class="theme-toggle">🌙</button>
-        <h1>Lotto Number Generator</h1>
-        <div id="lotto-numbers" class="lotto-numbers-container"></div>
-        <button id="generate-btn" class="generate-button">Generate Numbers</button>
+        <h1>AI Food Image Generator</h1>
+        <p>Enter a food name to "generate" an image!</p>
+        
+        <div class="input-container">
+            <input type="text" id="food-input" placeholder="e.g., Pizza, Sushi, Banana...">
+            <button id="generate-btn" class="generate-button">Generate Image</button>
+        </div>
+
+        <div id="image-container" class="image-container">
+            <div id="loading-spinner" class="loading-spinner" style="display: none;"></div>
+            <img id="food-image" src="" alt="Generated food image" style="display: none;">
+        </div>
     </main>
     <script src="main.js" type="module"></script>
 </body>
