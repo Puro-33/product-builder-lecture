@@ -34,7 +34,7 @@ body {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-base);
     margin: 0;
-    padding-top: 100px; /* Space for fixed header */
+    /* padding-top is now set by JavaScript */
     transition: background-color 0.3s ease, color 0.3s ease;
     scroll-behavior: smooth;
 }

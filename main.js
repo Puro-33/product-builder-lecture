@@ -81,3 +81,19 @@
         });
     });
 })();
+
+// --- Dynamic Header Padding ---
+(function() {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+
+    function adjustBodyPadding() {
+        const headerHeight = header.offsetHeight;
+        document.body.style.paddingTop = `${headerHeight}px`;
+    }
+
+    // Adjust on initial load
+    window.addEventListener('DOMContentLoaded', adjustBodyPadding);
+    // Adjust on window resize (for nav wrapping)
+    window.addEventListener('resize', adjustBodyPadding);
+})();
