@@ -55,23 +55,28 @@
         setTimeout(() => {
             foodImageDisplay.src = foodGeneratedImageUrl;
             foodImageDisplay.alt = `${foodName} 이미지`;
+            
             foodLoadingSpinner.style.display = 'none';
             foodImageDisplay.style.display = 'block';
+
         }, 1500);
     });
 })();
 
 // --- Smooth Scrolling Navigation ---
 (function() {
-    document.querySelectorAll('.main-nav a[href^="#"]').forEach(anchor => {
+    document.querySelectorAll('.main-nav a[href^="#"], .site-footer a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
             if (targetElement) {
                 targetElement.scrollIntoView({
-                    behavior: 'smooth'
+                    behavior: 'smooth',
+                    block: 'start' // Scroll to the top of the element
                 });
+                // Optional: Update URL hash without jumping
+                history.pushState(null, null, targetId);
             }
         });
     });

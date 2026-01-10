@@ -88,6 +88,7 @@ body {
     display: flex;
     justify-content: center;
     gap: var(--spacing-md);
+    flex-wrap: wrap; /* Allow navigation items to wrap on smaller screens */
 }
 
 .main-nav a {
@@ -230,6 +231,35 @@ input:focus, textarea:focus {
 .model-notice { /* ...same as before... */ }
 #disqus_thread { margin-top: var(--spacing-lg); }
 
+/* Privacy Policy Specifics */
+.privacy-policy-section .privacy-content {
+    text-align: left;
+    max-width: 700px;
+    margin: 0 auto;
+    font-size: 0.95rem;
+    line-height: 1.8;
+}
+.privacy-policy-section h3 {
+    font-size: 1.3rem;
+    color: var(--accent-color);
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+}
+.privacy-policy-section p {
+    margin-bottom: var(--spacing-md);
+    opacity: 0.9;
+}
+.privacy-policy-section .disclaimer {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background-color: var(--border-color); /* Light background for emphasis */
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+
 /* Footer */
 .site-footer {
     text-align: center;
@@ -240,3 +270,12 @@ input:focus, textarea:focus {
     opacity: 0.7;
 }
 .site-footer p { margin: 0.25rem 0; }
+.site-footer a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: var(--font-weight-bold);
+    margin: 0 var(--spacing-sm);
+}
+.site-footer a:hover {
+    text-decoration: underline;
+}
