@@ -9,7 +9,7 @@
             body.dataset.theme = 'light';
             themeToggleBtn.textContent = '☀️';
         } else {
-            body.dataset.theme = 'dark'; // Explicitly set dark theme
+            body.dataset.theme = 'dark';
             themeToggleBtn.textContent = '🌙';
         }
     }
@@ -20,16 +20,29 @@
         applyTheme(newTheme);
     });
 
+    // Apply saved theme on load
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-
     if (savedTheme) {
         applyTheme(savedTheme);
-    } else if (prefersDark) {
-        applyTheme('dark');
     } else {
-        applyTheme('light');
+        applyTheme('dark'); // Default to dark
     }
+})();
+
+// --- Smooth Scrolling ---
+(function() {
+    document.querySelectorAll('.main-nav a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
 })();
 
 // --- AI Food Image Generator ---
@@ -38,8 +51,7 @@
     if (!foodGenerateBtn) return;
     
     const foodInput = document.getElementById('food-input');
-    const foodLoadingSpinner = document.getElementById('food-loading-spinner');
-    const foodImageDisplay = document.getElementById('food-image-display');
+    const imageContainer = document.getElementById('food-image-container');
     const foodGeneratedImageUrl = 'https://images.pexels.com/photos/3026806/pexels-photo-3026806.jpeg';
 
     foodGenerateBtn.addEventListener('click', () => {
@@ -49,55 +61,74 @@
             return;
         }
 
-        foodLoadingSpinner.style.display = 'block';
-        foodImageDisplay.style.display = 'none';
+        imageContainer.innerHTML = '<div class="loading-spinner"></div>'; // Show spinner
 
         setTimeout(() => {
-            foodImageDisplay.src = foodGeneratedImageUrl;
-            foodImageDisplay.alt = `${foodName} 이미지`;
-            
-            foodLoadingSpinner.style.display = 'none';
-            foodImageDisplay.style.display = 'block';
-
+            const img = document.createElement('img');
+            img.src = foodGeneratedImageUrl;
+            img.alt = `${foodName} 이미지`;
+            imageContainer.innerHTML = '';
+            imageContainer.appendChild(img);
         }, 1500);
     });
 })();
 
-// --- Smooth Scrolling Navigation ---
-(function() {
-    document.querySelectorAll('.main-nav a[href^="#"], .site-footer a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                // Manually calculate offset to account for fixed header
-                const header = document.querySelector('.site-header');
-                const headerHeight = header ? header.offsetHeight : 0;
-                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
 
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-                history.pushState(null, null, targetId);
-            }
-        });
-    });
-})();
+// --- Teachable Machine ---
+let tm_model, tm_webcam, tm_labelContainer, tm_maxPredictions;
+const TM_URL = "./my_model/";
 
-// --- Dynamic Header Offset ---
-(function() {
-    const header = document.querySelector('.site-header');
-    const mainContent = document.querySelector('.app'); // Target the main content container
-    if (!header || !mainContent) return;
+async function tm_init() {
+    const modelURL = TM_URL + "model.json";
+    const metadataURL = TM_URL + "metadata.json";
+    const webcamContainer = document.getElementById("webcam-container");
+    tm_labelContainer = document.getElementById("label-container");
 
-    function adjustMainContentMargin() {
-        const headerHeight = header.offsetHeight;
-        mainContent.style.marginTop = `${headerHeight}px`; // Use margin-top on the main content
+    try {
+        tm_model = await tmImage.load(modelURL, metadataURL);
+        tm_maxPredictions = tm_model.getTotalClasses();
+
+        const flip = true;
+        tm_webcam = new tmImage.Webcam(200, 200, flip);
+        await tm_webcam.setup();
+        await tm_webcam.play();
+        window.requestAnimationFrame(tm_loop);
+
+        webcamContainer.innerHTML = '';
+        webcamContainer.appendChild(tm_webcam.canvas);
+        tm_labelContainer.innerHTML = '';
+        for (let i = 0; i < tm_maxPredictions; i++) {
+            tm_labelContainer.appendChild(document.createElement("div"));
+        }
+    } catch (error) {
+        console.error("Error loading Teachable Machine model:", error);
+        tm_labelContainer.innerHTML = "모델 로드 실패: 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
     }
+}
 
-    // Adjust on initial load and on resize
-    window.addEventListener('load', adjustMainContentMargin);
-    window.addEventListener('resize', adjustMainContentMargin);
-})();
+async function tm_loop() {
+    if (tm_webcam && tm_webcam.canvas) {
+        tm_webcam.update();
+        await tm_predict();
+        window.requestAnimationFrame(tm_loop);
+    }
+}
+
+async function tm_predict() {
+    if (tm_model && tm_webcam.canvas) {
+        const prediction = await tm_model.predict(tm_webcam.canvas);
+        for (let i = 0; i < tm_maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            if (tm_labelContainer.childNodes[i]) {
+                tm_labelContainer.childNodes[i].innerHTML = classPrediction;
+            }
+        }
+    }
+}
+
+// Attach event listener
+const tmStartBtn = document.getElementById('tm-start-btn');
+if (tmStartBtn) {
+    tmStartBtn.addEventListener('click', tm_init);
+}

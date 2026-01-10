@@ -3,213 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 놀이터 (AI Playground)</title>
-    <meta name="description" content="AI 음식 이미지 생성기, 동물상 테스트 등 재미있는 AI 도구를 체험해보세요!">
+    <title>정훈차의 블로그 & AI 놀이터</title>
+    <meta name="description" content="개인 블로그와 AI 실험 도구들을 함께 제공하는 공간입니다.">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5834947371442759"
      crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body data-theme="dark">
 
-    <header class="site-header">
-        <div class="header-content">
-            <h1>AI 놀이터 (AI Playground)</h1>
-            <p class="subtitle">다양한 AI 기반 도구들을 체험하고 즐겨보세요!</p>
+    <div class="site-container">
+        <aside class="sidebar">
+            <h1 class="site-title"><a href="/">정훈차의 공간</a></h1>
             <nav class="main-nav">
-                <a href="#food-generator">음식 이미지 생성</a>
-                <a href="#animal-test">동물상 테스트</a>
+                <a href="#blog">블로그</a>
+                <a href="#ai-tools">AI 놀이터</a>
                 <a href="#contact">제휴 문의</a>
-                <a href="#comments">댓글</a>
-                <a href="#privacy-policy">개인정보처리방침</a>
             </nav>
-        </div>
-        <button id="theme-toggle-btn" class="theme-toggle">🌙</button>
-    </header>
-
-    <main class="app">
-        <!-- Section 1: AI Food Image Generator -->
-        <section id="food-generator" class="app-section">
-            <h2>AI 음식 이미지 생성기</h2>
-            <p class="section-description">
-                먹고 싶은 음식의 이름을 입력해보세요! AI가 음식에 대한 이미지를 마법처럼 "생성"해줍니다. <br>
-                현재는 시뮬레이션 기능으로, 어떤 텍스트를 입력해도 미리 준비된 고품질 이미지를 보여줍니다. 이 기능은 최신 AI 이미지 생성 기술의 가능성을 보여주며, 사용자들에게 재미있고 시각적인 경험을 제공합니다.
-            </p>
-            <div class="input-container">
-                <input type="text" id="food-input" placeholder="예: Pizza, Sushi, Banana...">
-                <button id="food-generate-btn" class="generate-button">이미지 생성</button>
+            <div class="theme-toggle-container">
+                <button id="theme-toggle-btn">🌙</button>
+                <span>다크 모드</span>
             </div>
-            <div id="food-image-container" class="image-container">
-                <div id="food-loading-spinner" class="loading-spinner" style="display: none;"></div>
-                <img id="food-image-display" src="" alt="생성된 음식 이미지" style="display: none;">
-            </div>
-        </section>
+        </aside>
 
-        <!-- Section 2: Teachable Machine Animal Face Test -->
-        <section id="animal-test" class="app-section">
-            <h2>동물상 테스트</h2>
-            <p class="section-description">
-                AI가 당신의 얼굴을 분석하여 어떤 동물상에 가까운지 알려줍니다. <br>
-                아래 "Start" 버튼을 누르면 웹캠이 켜지고, 실시간으로 예측 결과가 표시됩니다. 친구들과 함께 누가 어떤 동물상인지 테스트하며 즐거운 시간을 보내보세요! (이 기능은 사용자님이 직접 학습시킨 Teachable Machine 모델을 기반으로 동작합니다.)
-            </p>
-            <button type="button" id="tm-start-btn">Start</button>
-            <div id="webcam-container"></div>
-            <div id="label-container"></div>
-            <div class="model-notice">
-                <strong>참고:</strong> 이 기능은 사용자님이 Teachable Machine에서 내보낸 <code>model.json</code> 및 <code>metadata.json</code> 파일이 'my_model' 폴더에 있어야 정상 작동합니다.
-            </div>
-        </section>
-
-        <!-- Section 3: Partnership Inquiry Form -->
-        <section id="contact" class="app-section contact-form-section">
-            <h2>제휴 문의</h2>
-            <p class="section-description">
-                본 웹사이트와의 협업이나 제휴에 관심이 있으시면 아래 폼을 통해 문의해주세요. <br>
-                다양한 아이디어와 기회를 환영합니다. 여러분의 소중한 의견을 기다립니다.
-            </p>
-            <form action="https://formspree.io/f/xdaandjj" method="POST">
-                <div class="form-group">
-                    <label for="name">이름:</label>
-                    <input type="text" id="name" name="name" required>
+        <main class="main-content">
+            <section id="blog" class="content-section">
+                <h2>최신 글</h2>
+                <div class="post-list">
+                    <!-- 예시 포스트 1 -->
+                    <article class="post-preview">
+                        <h3><a href="#">블로그 포스트 제목 예시 1</a></h3>
+                        <p class="post-meta">2026년 1월 10일</p>
+                        <p class="post-excerpt">이것은 블로그 게시물의 내용 일부입니다. 사용자가 실제 내용을 제공하면 이 부분이 채워집니다. 전체 글을 보려면 제목을 클릭하세요...</p>
+                    </article>
+                    <!-- 예시 포스트 2 -->
+                    <article class="post-preview">
+                        <h3><a href="#">블로그 포스트 제목 예시 2</a></h3>
+                        <p class="post-meta">2026년 1월 9일</p>
+                        <p class="post-excerpt">두 번째 블로그 게시물의 내용 예시입니다. 이 사이트는 블로그와 AI 도구를 결합한 형태로 구성될 예정입니다...</p>
+                    </article>
                 </div>
-                <div class="form-group">
-                    <label for="email">이메일:</label>
-                    <input type="email" id="email" name="email" required>
+            </section>
+            
+            <section id="ai-tools" class="content-section">
+                <h2>AI 놀이터</h2>
+                <div class="tool-grid">
+                    <!-- AI Food Image Generator -->
+                    <div class="tool-card" id="food-generator">
+                        <h3>AI 음식 이미지 생성기</h3>
+                        <p>먹고 싶은 음식의 이름을 입력하면 AI가 이미지를 "생성"해줍니다.</p>
+                        <div class="input-container">
+                            <input type="text" id="food-input" placeholder="예: Pizza, Sushi...">
+                            <button id="food-generate-btn" class="generate-button">생성</button>
+                        </div>
+                        <div id="food-image-container" class="image-container"></div>
+                    </div>
+                    <!-- Animal Face Test -->
+                    <div class="tool-card" id="animal-test">
+                        <h3>동물상 테스트</h3>
+                        <p>웹캠을 켜고 AI가 당신의 동물상을 분석하게 해보세요.</p>
+                        <button type="button" id="tm-start-btn">Start</button>
+                        <div id="webcam-container"></div>
+                        <div id="label-container"></div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="message">메시지:</label>
-                    <textarea id="message" name="message" rows="5" required></textarea>
-                </div>
-                <button type="submit" class="generate-button">문의 보내기</button>
-            </form>
-        </section>
+            </section>
 
-        <!-- Section 4: Comments -->
-        <section id="comments" class="app-section comments-section">
-            <h2>댓글</h2>
-            <p class="section-description">
-                이 웹사이트에 대한 자유로운 의견, 개선 제안, 사용 후기 등을 남겨주세요. <br>
-                여러분의 피드백은 사이트 발전에 큰 도움이 됩니다.
-            </p>
-            <div id="disqus_thread"></div>
-            <script>
-                var disqus_config = function () {
-                this.page.url = window.location.href;
-                this.page.identifier = 'integrated-app-v2-optimized';
-                };
-                (function() {
-                    var d = document, s = d.createElement('script');
-                    s.src = 'https://https-product-builder-lecture-aua-pages-dev.disqus.com/embed.js';
-                    s.setAttribute('data-timestamp', +new Date());
-                    (d.head || d.body).appendChild(s);
-                })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-            <script id="dsq-count-scr" src="//https-product-builder-lecture-aua-pages-dev.disqus.com/count.js" async></script>
-        </section>
+            <section id="contact" class="content-section">
+                <h2>제휴 문의</h2>
+                <!-- Formspree Form will go here -->
+            </section>
 
-        <!-- Section 5: Privacy Policy -->
-        <section id="privacy-policy" class="app-section privacy-policy-section">
-            <h2>개인정보처리방침</h2>
-            <p class="section-description">
-                이 웹사이트는 사용자님의 개인정보를 소중하게 생각하며, 관련 법규를 준수합니다. <br>
-                아래는 본 사이트의 개인정보 처리 방침에 대한 개요입니다.
-            </p>
-            <div class="privacy-content">
-                <h3>1. 수집하는 개인정보 항목</h3>
-                <p>본 사이트는 제휴 문의를 통해 이름, 이메일 주소, 메시지 내용을 수집합니다. 웹캠 기반의 동물상 테스트 기능은 사용자의 웹캠 영상에 직접 접근하지만, 어떠한 이미지나 개인 식별 정보도 서버로 전송하거나 저장하지 않습니다.</p>
-
-                <h3>2. 개인정보의 수집 및 이용 목적</h3>
-                <p>수집된 이름과 이메일 주소는 제휴 문의에 대한 답변 및 원활한 커뮤니케이션을 위해서만 사용됩니다. 동물상 테스트에서 웹캠을 사용하는 목적은 오직 실시간 이미지 분석을 통한 예측 결과를 제공하는 것이며, 별도 저장되지 않습니다.</p>
-
-                <h3>3. 개인정보의 보유 및 이용 기간</h3>
-                <p>제휴 문의를 통해 수집된 개인정보는 문의 처리 완료 후 3개월간 보관되며, 그 이후에는 지체 없이 파기됩니다.</p>
-
-                <h3>4. 개인정보의 파기 절차 및 방법</h3>
-                <p>보유 기간이 경과된 개인정보는 내부 방침 및 기타 관련 법령에 따라 일정 기간 저장된 후 파기됩니다. 파기 시 종이 문서는 분쇄하거나 소각하고, 전자적 파일 형태의 정보는 기록을 재생할 수 없는 기술적 방법을 사용하여 삭제합니다.</p>
-
-                <h3>5. 사용자 및 법정대리인의 권리와 그 행사 방법</h3>
-                <p>사용자(정보 주체)는 언제든지 자신의 개인정보를 열람, 정정, 삭제, 처리정지 요청할 수 있습니다. 자세한 사항은 제휴 문의 폼을 통해 요청해주시기 바랍니다.</p>
-
-                <h3>6. 개인정보 자동 수집 장치의 설치/운영 및 거부에 관한 사항</h3>
-                <p>본 사이트는 사용자에게 맞춤형 서비스를 제공하기 위해 쿠키(Cookie)를 사용하지 않습니다. 다만, 서비스 개선 및 분석을 위해 Google Analytics와 같은 외부 분석 도구가 사용될 수 있으며, 이 경우 익명화된 형태로 데이터가 수집됩니다. 웹캠 기능 사용 동의는 브라우저 설정에서 철회할 수 있습니다.</p>
-
-                <h3>7. 개인정보 보호 책임자 및 담당 부서</h3>
-                <p>본 웹사이트는 별도의 개인정보 보호 책임자를 지정하지 않습니다. 개인정보 보호와 관련된 문의사항은 제휴 문의 폼을 통해 연락주시면 성실히 답변드리겠습니다.</p>
-
-                <h3>8. 개인정보 처리방침 변경</h3>
-                <p>이 개인정보 처리방침은 법령 및 방침에 따른 변경 내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 웹사이트 공지사항을 통하여 고지할 것입니다.</p>
-
-                <p class="disclaimer"><strong>*본 개인정보처리방침은 일반적인 예시이며, 실제 서비스 운영에 필요한 모든 법적 요건을 충족하지 않을 수 있습니다. 반드시 법률 전문가와 상의하여 귀하의 서비스에 맞는 개인정보처리방침을 작성하시기 바랍니다.*</strong></p>
-            </div>
-        </section>
-    </main>
-    
-    <footer class="site-footer">
-        <p>AI 놀이터 &copy; 2026. All Rights Reserved.</p>
-        <p><a href="#privacy-policy">개인정보처리방침</a> | <a href="#contact">문의하기</a></p>
-        <p>Email: contact@ai-playground.com (예시 이메일입니다)</p>
-    </footer>
+            <footer class="site-footer">
+                <p>&copy; 2026 정훈차. All Rights Reserved.</p>
+                <a href="#">개인정보처리방침</a>
+            </footer>
+        </main>
+    </div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-    <script type="text/javascript">
-        // Teachable Machine Logic
-        (function() {
-            const TM_URL = "./my_model/";
-            let tm_model, tm_webcam, tm_labelContainer, tm_maxPredictions;
-
-            async function tm_init() {
-                const modelURL = TM_URL + "model.json";
-                const metadataURL = TM_URL + "metadata.json";
-
-                try {
-                    tm_model = await tmImage.load(modelURL, metadataURL);
-                    tm_maxPredictions = tm_model.getTotalClasses();
-
-                    const flip = true;
-                    tm_webcam = new tmImage.Webcam(200, 200, flip);
-                    await tm_webcam.setup();
-                    await tm_webcam.play();
-                    window.requestAnimationFrame(tm_loop);
-
-                    document.getElementById("webcam-container").innerHTML = '';
-                    document.getElementById("webcam-container").appendChild(tm_webcam.canvas);
-                    tm_labelContainer = document.getElementById("label-container");
-                    tm_labelContainer.innerHTML = '';
-                    for (let i = 0; i < tm_maxPredictions; i++) {
-                        tm_labelContainer.appendChild(document.createElement("div"));
-                    }
-                } catch (error) {
-                    console.error("Error loading Teachable Machine model:", error);
-                    document.getElementById("label-container").innerHTML = "모델 로드 실패: 'my_model' 폴더에 파일이 올바르게 있는지 확인하세요.";
-                }
-            }
-
-            async function tm_loop() {
-                if (tm_webcam && tm_webcam.canvas) {
-                    tm_webcam.update();
-                    await tm_predict();
-                    window.requestAnimationFrame(tm_loop);
-                }
-            }
-
-            async function tm_predict() {
-                if (tm_model && tm_webcam.canvas) {
-                    const prediction = await tm_model.predict(tm_webcam.canvas);
-                    for (let i = 0; i < tm_maxPredictions; i++) {
-                        const classPrediction =
-                            prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-                        if (tm_labelContainer.childNodes[i]) {
-                           tm_labelContainer.childNodes[i].innerHTML = classPrediction;
-                        }
-                    }
-                }
-            }
-
-            document.getElementById('tm-start-btn').addEventListener('click', tm_init);
-        })();
-    </script>
     <script src="main.js" type="module"></script>
 </body>
 </html>
