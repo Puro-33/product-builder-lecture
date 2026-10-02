@@ -345,12 +345,31 @@ input[type="text"] {
     color: #ff6b6b;
 }
 
-.fbt-advanced {
-    margin-top: 1rem;
-    text-align: left;
+.fbt-vr a, .fbt-vr code {
+    color: var(--accent-color);
 }
 
-.fbt-advanced summary {
-    cursor: pointer;
-    color: var(--accent-color);
+.fbt-vr {
+    margin-top: 1rem;
+    text-align: left;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.fbt-vr h4 {
+    margin: 0 0 0.5rem;
+}
+
+.fbt-vr li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.fbt-vr-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
 }
