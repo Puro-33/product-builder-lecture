@@ -1,7 +1,6 @@
-// --- Webcam Full Body Tracking (MediaPipe Pose Landmarker) ---
-// 웹캠 한 대로 전신 관절을 추정하고, VRChat OSC 트래커 규격
-// (/tracking/trackers/1~8, Unity 좌표계, 미터·도 단위)에 맞는
-// 가상 트래커(골반, 가슴, 양발, 양 무릎)와 머리 기준점을 계산합니다.
+// --- 웹캠 풀바디 환경 진단기 (MediaPipe Pose Landmarker) ---
+// 10초 동안 웹캠 영상을 분석해 "내 방, 내 웹캠, 내 조명"이 웹캠 풀바디 트래킹에
+// 적합한지 점수로 보여주고, 헤드셋 종류에 맞는 프로그램을 추천합니다.
 import {
     PoseLandmarker,
     FilesetResolver,
@@ -11,129 +10,125 @@ import {
 const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
 
-// MediaPipe Pose landmark indices
-const LM = {
-    NOSE: 0, L_EAR: 7, R_EAR: 8,
-    L_SHOULDER: 11, R_SHOULDER: 12,
-    L_HIP: 23, R_HIP: 24,
-    L_KNEE: 25, R_KNEE: 26,
-    L_ANKLE: 27, R_ANKLE: 28,
-    L_FOOT: 31, R_FOOT: 32
-};
-const USED_LANDMARKS = Object.values(LM);
-
-// VRChat OSC 트래커 번호(1~8)와 화면 표시용 랜드마크
-const TRACKERS = [
-    { id: 1, name: "골반 (Hip)", screen: [LM.L_HIP, LM.R_HIP] },
-    { id: 2, name: "가슴 (Chest)", screen: [LM.L_SHOULDER, LM.R_SHOULDER] },
-    { id: 3, name: "왼발", screen: [LM.L_ANKLE, LM.L_FOOT] },
-    { id: 4, name: "오른발", screen: [LM.R_ANKLE, LM.R_FOOT] },
-    { id: 5, name: "왼무릎", screen: [LM.L_KNEE] },
-    { id: 6, name: "오른무릎", screen: [LM.R_KNEE] }
-];
-
+const MEASURE_SECONDS = 10;
+const DETECT_TIMEOUT_SECONDS = 15;
 const VISIBILITY_THRESHOLD = 0.5;
-const CALIBRATION_FRAMES = 30;
-const RAD2DEG = 180 / Math.PI;
+const EDGE_MARGIN = 0.02;
 
-// One Euro Filter: 가만히 있을 때의 떨림(Jitter)은 강하게, 빠른 움직임은 덜 지연되게 필터링
-class LowPass {
-    constructor() { this.y = null; }
-    filter(x, alpha) {
-        this.y = this.y === null ? x : alpha * x + (1 - alpha) * this.y;
-        return this.y;
-    }
+// 전신 트래킹에 필요한 랜드마크: 코, 어깨, 골반, 무릎, 발목, 발끝
+const NOSE = 0;
+const L_ANKLE = 27;
+const R_ANKLE = 28;
+const BODY_LANDMARKS = [NOSE, 11, 12, 23, 24, 25, 26, L_ANKLE, R_ANKLE, 31, 32];
+
+// 측정값 → 0~100점 (lo 이하/hi 이상 구간을 선형으로 보간)
+function linearScore(value, worst, best) {
+    const t = (value - worst) / (best - worst);
+    return Math.round(Math.max(0, Math.min(1, t)) * 100);
 }
 
-class OneEuroFilter {
-    constructor(minCutoff = 1.0, beta = 0.3, dCutoff = 1.0) {
-        this.minCutoff = minCutoff;
-        this.beta = beta;
-        this.dCutoff = dCutoff;
-        this.x = new LowPass();
-        this.dx = new LowPass();
-        this.lastTime = null;
-        this.lastRaw = null;
-    }
-    static alpha(cutoff, dt) {
-        const tau = 1 / (2 * Math.PI * cutoff);
-        return 1 / (1 + tau / dt);
-    }
-    filter(value, timeSec) {
-        if (this.lastTime === null) {
-            this.lastTime = timeSec;
-            this.lastRaw = value;
-            return this.x.filter(value, 1);
+function rangeScore(value, min, max, tolerance) {
+    if (value < min) return linearScore(value, min - tolerance, min);
+    if (value > max) return linearScore(value, max + tolerance, max);
+    return 100;
+}
+
+function stdDev(values) {
+    if (values.length < 2) return 0;
+    const mean = values.reduce((a, b) => a + b, 0) / values.length;
+    return Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length);
+}
+
+function evaluate(stats) {
+    const fullBodyRate = stats.fullBodyFrames / Math.max(stats.frames, 1);
+    const bodyHeight = stats.bodyHeights.length
+        ? stats.bodyHeights.reduce((a, b) => a + b, 0) / stats.bodyHeights.length
+        : 0;
+    const brightness = stats.brightness.length
+        ? stats.brightness.reduce((a, b) => a + b, 0) / stats.brightness.length
+        : 0;
+    // 발목 위치(골반 기준, 미터)의 흔들림을 발목·축별로 구해 평균(cm)
+    const ankleStds = Object.values(stats.ankles).flatMap(axes => axes.map(stdDev));
+    const jitterCm = 100 * ankleStds.reduce((a, b) => a + b, 0) / ankleStds.length;
+    const fps = stats.frames / MEASURE_SECONDS;
+
+    const metrics = [
+        {
+            key: "fullBody",
+            label: "전신 인식률",
+            value: `${Math.round(fullBodyRate * 100)}%`,
+            score: linearScore(fullBodyRate, 0.4, 0.95),
+            weight: 3,
+            tip: "머리부터 발끝까지 화면에 다 들어오게 카메라를 낮추거나 뒤로 물러나세요. 발이 잘리면 다리 트래킹이 불가능합니다."
+        },
+        {
+            key: "distance",
+            label: "카메라 거리",
+            value: bodyHeight ? `화면 높이의 ${Math.round(bodyHeight * 100)}%` : "-",
+            score: rangeScore(bodyHeight, 0.55, 0.85, 0.3),
+            weight: 2,
+            tip: bodyHeight > 0.85
+                ? "카메라와 너무 가깝습니다. 한두 걸음 뒤로 물러나 2~3m 거리를 확보하세요."
+                : "카메라와 너무 멉니다. 몸이 화면 높이의 55~85%를 차지하도록 다가서세요."
+        },
+        {
+            key: "lighting",
+            label: "조명 밝기",
+            value: `${Math.round(brightness)} / 255`,
+            score: rangeScore(brightness, 90, 190, 60),
+            weight: 2,
+            tip: brightness > 190
+                ? "화면이 너무 밝습니다. 등 뒤의 창문·조명을 피해 역광을 없애세요."
+                : "방이 어둡습니다. 정면(카메라 쪽)에서 몸을 비추는 조명을 켜세요."
+        },
+        {
+            key: "jitter",
+            label: "떨림 (가만히 서 있을 때)",
+            value: `${jitterCm.toFixed(1)} cm`,
+            score: linearScore(jitterCm, 6, 1.5),
+            weight: 2,
+            tip: "단색 벽 같은 단순한 배경, 몸에 붙는 옷, 밝은 조명이 떨림을 줄입니다. 측정 중엔 가만히 서 있어 주세요."
+        },
+        {
+            key: "fps",
+            label: "인식 속도",
+            value: `${fps.toFixed(0)} fps`,
+            score: linearScore(fps, 10, 25),
+            weight: 1,
+            tip: "PC 성능이 부족합니다. 다른 프로그램을 닫거나, 트래킹 프로그램을 VR과 다른 PC/휴대폰에서 돌리는 방법을 고려하세요."
         }
-        const dt = Math.max(timeSec - this.lastTime, 1e-3);
-        this.lastTime = timeSec;
-        const dValue = (value - this.lastRaw) / dt;
-        this.lastRaw = value;
-        const edValue = this.dx.filter(dValue, OneEuroFilter.alpha(this.dCutoff, dt));
-        const cutoff = this.minCutoff + this.beta * Math.abs(edValue);
-        return this.x.filter(value, OneEuroFilter.alpha(cutoff, dt));
+    ];
+
+    const totalWeight = metrics.reduce((a, m) => a + m.weight, 0);
+    const total = Math.round(metrics.reduce((a, m) => a + m.score * m.weight, 0) / totalWeight);
+    return { metrics, total };
+}
+
+// 헤드셋 종류 + 점수 → 추천 프로그램
+function recommend(headset, total) {
+    const recs = [];
+    const webcamOk = total >= 60;
+
+    if (headset === "quest3") {
+        recs.push("<strong>1순위: Virtual Desktop 바디 트래킹</strong> — Quest 3/3S는 헤드셋 카메라로 상체를 추적하고 다리는 AI로 추정해 VRChat용 가상 트래커를 만들어 줍니다. 웹캠 설치가 필요 없습니다.");
+    } else if (headset === "quest2") {
+        recs.push("<strong>Virtual Desktop 바디 트래킹</strong>도 Quest 2/Pro를 지원하지만 다리는 AI 추정이라 실제 움직임과 다를 수 있습니다. 실제 다리를 움직이려면 웹캠 방식이 낫습니다.");
     }
-}
 
-// --- Vector helpers (Unity 좌표계: x 오른쪽, y 위, z 앞, 왼손 좌표계) ---
-const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const scale = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
-const mid = (a, b) => scale(add(a, b), 0.5);
-const cross = (a, b) => [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0]
-];
-const normalize = (a) => {
-    const len = Math.hypot(a[0], a[1], a[2]) || 1;
-    return scale(a, 1 / len);
-};
+    if (webcamOk) {
+        recs.push("<strong>무료로 먼저: Blobfish FBT</strong> — 설치·계정 없이 브라우저에서 바로 쓰는 무료 웹캠 FBT입니다.");
+        if (headset === "pcvr") {
+            recs.push("<strong>SteamVR 무료 대안: MediaPipe-VR-Fullbody-Tracking</strong> — 오픈소스, 설정이 조금 번거롭습니다.");
+        }
+        recs.push("<strong>안정성이 필요하면: Driver4VR</strong> — 약 $17 일회 구매. PC VR과 퀘스트 단독 실행(OSC)을 모두 지원하고 휴대폰 카메라도 쓸 수 있습니다. 무료 체험(골반만)으로 먼저 확인하세요.");
+    } else {
+        recs.push("<strong>웹캠 방식은 지금 환경에서 비추천</strong> — 아래 개선 팁을 적용한 뒤 다시 측정해 보세요.");
+    }
 
-// MediaPipe world 좌표(골반 중심, x=이미지 오른쪽, y=아래, z=카메라에서 멀어지는 쪽)를
-// 사용자가 카메라를 바라보는 기준의 Unity 좌표(x=사용자 오른쪽, y=위, z=사용자 앞)로 변환
-const toUnity = (p) => [-p.x, -p.y, -p.z];
-
-// 오른쪽/위 방향 벡터로 회전을 만들고 Unity 오일러 각도(도, Z→X→Y 순서)로 변환
-function eulerFromBasis(rightHint, upHint) {
-    const up = normalize(upHint);
-    const forward = normalize(cross(normalize(rightHint), up));
-    const right = cross(up, forward);
-    const pitch = Math.asin(Math.max(-1, Math.min(1, -forward[1])));
-    const yaw = Math.atan2(forward[0], forward[2]);
-    const roll = Math.atan2(right[1], up[1]);
-    return [pitch * RAD2DEG, yaw * RAD2DEG, roll * RAD2DEG];
-}
-
-// 발: 발끝 방향을 앞으로, 세계 위쪽을 기준으로 회전 계산
-function footEuler(ankle, toe) {
-    const forward = normalize(sub(toe, ankle));
-    const right = cross([0, 1, 0], forward);
-    return eulerFromBasis(right, cross(forward, right));
-}
-
-// 필터링된 Unity 좌표 랜드마크로 VRChat 트래커 + 머리 기준점을 계산
-function computeTrackers(p, floorOffset) {
-    const lift = (v) => [v[0], v[1] + floorOffset, v[2]];
-    const hip = mid(p[LM.L_HIP], p[LM.R_HIP]);
-    const chest = mid(p[LM.L_SHOULDER], p[LM.R_SHOULDER]);
-    const hipRight = sub(p[LM.R_HIP], p[LM.L_HIP]);
-    const hipRot = eulerFromBasis(hipRight, sub(chest, hip));
-    const chestRot = eulerFromBasis(sub(p[LM.R_SHOULDER], p[LM.L_SHOULDER]), sub(chest, hip));
-    const head = mid(p[LM.L_EAR], p[LM.R_EAR]);
-    const headRot = eulerFromBasis(sub(p[LM.R_EAR], p[LM.L_EAR]), sub(head, chest));
-
-    return {
-        trackers: [
-            { position: lift(hip), rotation: hipRot },
-            { position: lift(chest), rotation: chestRot },
-            { position: lift(p[LM.L_ANKLE]), rotation: footEuler(p[LM.L_ANKLE], p[LM.L_FOOT]) },
-            { position: lift(p[LM.R_ANKLE]), rotation: footEuler(p[LM.R_ANKLE], p[LM.R_FOOT]) },
-            { position: lift(p[LM.L_KNEE]), rotation: hipRot },
-            { position: lift(p[LM.R_KNEE]), rotation: hipRot }
-        ],
-        head: { position: lift(head), rotation: headRot }
-    };
+    if (!webcamOk || headset === "pcvr") {
+        recs.push("<strong>정확도가 중요하면: SlimeVR</strong> — 카메라 없이 몸에 차는 IMU 트래커. 약 $219(하체 세트)부터. 가림·조명 문제가 없습니다.");
+    }
+    return recs;
 }
 
 (function() {
@@ -144,68 +139,59 @@ function computeTrackers(p, floorOffset) {
     const canvas = document.getElementById("fbt-canvas");
     const ctx = canvas.getContext("2d");
     const statusEl = document.getElementById("fbt-status");
-    const tableBody = document.getElementById("fbt-tracker-body");
-    const smoothingInput = document.getElementById("fbt-smoothing");
-    const calibrateBtn = document.getElementById("fbt-calibrate-btn");
-    const wsInput = document.getElementById("fbt-ws-url");
-    const wsBtn = document.getElementById("fbt-ws-btn");
-    const wsStatus = document.getElementById("fbt-ws-status");
-    const sendHeadInput = document.getElementById("fbt-send-head");
+    const progressBar = document.getElementById("fbt-progress-bar");
+    const resultEl = document.getElementById("fbt-result");
+    const headsetSelect = document.getElementById("fbt-headset");
+
+    // 밝기 측정용 작은 캔버스
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = 64;
+    sampleCanvas.height = 48;
+    const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
 
     let poseLandmarker = null;
     let running = false;
     let lastVideoTime = -1;
-    let filters = createFilters();
-    let socket = null;
-    // 바닥 높이 캘리브레이션: 똑바로 선 자세에서 발목 높이를 바닥(y=0) 근처로 맞춤
-    let floorOffset = null;
-    let calibrationSamples = [];
-
-    function createFilters() {
-        // 슬라이더 값(0~100)이 클수록 minCutoff를 낮춰 더 부드럽게
-        const level = smoothingInput ? Number(smoothingInput.value) : 50;
-        const minCutoff = 3.0 - (level / 100) * 2.8;
-        const map = {};
-        for (const id of USED_LANDMARKS) {
-            map[id] = [0, 1, 2].map(() => new OneEuroFilter(minCutoff, 0.3));
-        }
-        return map;
-    }
-
-    function startCalibration() {
-        floorOffset = null;
-        calibrationSamples = [];
-    }
+    let startTime = 0;
+    let measureStart = null;
+    let stats = null;
 
     function setStatus(text) {
         statusEl.textContent = text;
     }
 
-    function averageVisibility(landmarks, ids) {
-        return ids.reduce((sum, id) => sum + (landmarks[id].visibility ?? 1), 0) / ids.length;
+    function setProgress(ratio) {
+        progressBar.style.width = `${Math.round(Math.max(0, Math.min(1, ratio)) * 100)}%`;
     }
 
-    function averageScreen(landmarks, ids) {
-        const x = ids.reduce((sum, id) => sum + landmarks[id].x, 0) / ids.length;
-        const y = ids.reduce((sum, id) => sum + landmarks[id].y, 0) / ids.length;
-        return { x, y };
+    function newStats() {
+        return {
+            frames: 0,
+            fullBodyFrames: 0,
+            bodyHeights: [],
+            brightness: [],
+            ankles: { [L_ANKLE]: [[], [], []], [R_ANKLE]: [[], [], []] }
+        };
     }
 
-    function buildTrackerRows() {
-        tableBody.innerHTML = "";
-        for (const t of TRACKERS) {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${t.id}. ${t.name}</td><td>-</td><td>-</td><td>-</td>`;
-            tableBody.appendChild(row);
+    function measureBrightness() {
+        sampleCtx.drawImage(video, 0, 0, sampleCanvas.width, sampleCanvas.height);
+        const { data } = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
+        let sum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+            sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
         }
+        return sum / (data.length / 4);
     }
 
-    async function init() {
+    async function start() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             setStatus("이 브라우저에서는 웹캠을 쓸 수 없습니다. HTTPS 주소로 접속했는지 확인하세요.");
             return;
         }
         startBtn.disabled = true;
+        resultEl.hidden = true;
+        setProgress(0);
         setStatus("AI 모델을 불러오는 중...");
         try {
             if (!poseLandmarker) {
@@ -226,42 +212,58 @@ function computeTrackers(p, floorOffset) {
 
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            buildTrackerRows();
-            filters = createFilters();
-            startCalibration();
+            stats = newStats();
+            measureStart = null;
+            startTime = performance.now();
             running = true;
-            startBtn.textContent = "Stop";
-            startBtn.disabled = false;
+            setStatus("카메라에서 2~3m 떨어져 전신이 보이게 서 주세요...");
             requestAnimationFrame(loop);
         } catch (error) {
-            console.error("Full body tracking init failed:", error);
+            console.error("Full body check init failed:", error);
             setStatus("시작 실패: 웹캠 권한 또는 네트워크 연결을 확인하세요.");
             startBtn.disabled = false;
         }
     }
 
-    function stop() {
+    function stopCamera() {
         running = false;
         const stream = video.srcObject;
         if (stream) stream.getTracks().forEach(track => track.stop());
         video.srcObject = null;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        startBtn.textContent = "Start";
-        setStatus("정지됨");
+        startBtn.disabled = false;
+        startBtn.textContent = "다시 측정";
     }
 
     function loop() {
         if (!running) return;
+        const now = performance.now();
+
+        if (measureStart === null && now - startTime > DETECT_TIMEOUT_SECONDS * 1000) {
+            stopCamera();
+            setStatus("사람을 찾지 못했습니다. 카메라 앞에 전신이 보이게 서서 다시 측정해 주세요.");
+            return;
+        }
+
         if (video.currentTime !== lastVideoTime) {
             lastVideoTime = video.currentTime;
-            const now = performance.now();
             const result = poseLandmarker.detectForVideo(video, now);
-            render(result, now / 1000);
+            render(result, now);
+        }
+
+        if (measureStart !== null) {
+            const elapsed = (now - measureStart) / 1000;
+            setProgress(elapsed / MEASURE_SECONDS);
+            if (elapsed >= MEASURE_SECONDS) {
+                stopCamera();
+                showResult();
+                return;
+            }
+            setStatus(`측정 중... ${Math.ceil(MEASURE_SECONDS - elapsed)}초 — 정면을 보고 가만히 서 있어 주세요.`);
         }
         requestAnimationFrame(loop);
     }
 
-    function render(result, timeSec) {
+    function render(result, now) {
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // 거울 모드로 그리기
@@ -271,128 +273,82 @@ function computeTrackers(p, floorOffset) {
 
         const landmarks = result.landmarks && result.landmarks[0];
         const world = result.worldLandmarks && result.worldLandmarks[0];
-        if (!landmarks || !world) {
-            ctx.restore();
-            setStatus("사람이 감지되지 않습니다. 카메라에서 조금 떨어져 전신이 보이게 해주세요.");
-            return;
+        if (landmarks) {
+            const drawingUtils = new DrawingUtils(ctx);
+            drawingUtils.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, {
+                color: "#4dabf7",
+                lineWidth: 3
+            });
+            drawingUtils.drawLandmarks(landmarks, { color: "#ffffff", radius: 2 });
         }
-
-        const drawingUtils = new DrawingUtils(ctx);
-        drawingUtils.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, {
-            color: "#4dabf7",
-            lineWidth: 3
-        });
-        drawingUtils.drawLandmarks(landmarks, { color: "#ffffff", radius: 2 });
-
-        // 사용하는 랜드마크만 Unity 좌표로 변환 후 떨림 필터 적용
-        const points = {};
-        for (const id of USED_LANDMARKS) {
-            points[id] = toUnity(world[id]).map((v, axis) => filters[id][axis].filter(v, timeSec));
-        }
-
-        // 바닥 캘리브레이션: 처음 몇 프레임 동안 발목 높이 평균을 모아 바닥 기준으로 사용
-        if (floorOffset === null) {
-            const ankleY = Math.min(points[LM.L_ANKLE][1], points[LM.R_ANKLE][1]);
-            calibrationSamples.push(ankleY);
-            if (calibrationSamples.length >= CALIBRATION_FRAMES) {
-                const avg = calibrationSamples.reduce((a, b) => a + b, 0) / calibrationSamples.length;
-                // 발목은 바닥에서 약 8cm 위
-                floorOffset = 0.08 - avg;
-            }
-        }
-
-        const { trackers, head } = computeTrackers(points, floorOffset ?? 0);
-
-        const lost = [];
-        TRACKERS.forEach((tracker, i) => {
-            const screen = averageScreen(landmarks, tracker.screen);
-            const visible = averageVisibility(landmarks, tracker.screen) >= VISIBILITY_THRESHOLD;
-            trackers[i].visible = visible;
-
-            ctx.beginPath();
-            ctx.arc(screen.x * canvas.width, screen.y * canvas.height, 9, 0, Math.PI * 2);
-            ctx.fillStyle = visible ? "rgba(81, 207, 102, 0.9)" : "rgba(255, 107, 107, 0.9)";
-            ctx.fill();
-
-            const pos = trackers[i].position;
-            const cells = tableBody.rows[i].cells;
-            cells[1].textContent = pos[0].toFixed(2);
-            cells[2].textContent = pos[1].toFixed(2);
-            cells[3].textContent = pos[2].toFixed(2);
-            tableBody.rows[i].classList.toggle("fbt-lost", !visible);
-
-            if (!visible) lost.push(tracker.name);
-        });
         ctx.restore();
 
-        if (floorOffset === null) {
-            setStatus("캘리브레이션 중 — 카메라를 정면으로 보고 똑바로 서 주세요...");
-        } else if (lost.length) {
-            setStatus(`가려진 부위: ${lost.join(", ")} — 정면을 보고 가리지 않게 움직여 주세요.`);
-        } else {
-            setStatus("트래킹 중 — 모든 트래커가 정상 인식되고 있습니다.");
-        }
+        // 사람이 처음 감지된 순간부터 측정 시작
+        if (landmarks && measureStart === null) measureStart = now;
+        if (measureStart === null) return;
 
-        // 캘리브레이션이 끝난 뒤에만 VR 월드로 전송
-        if (floorOffset !== null && socket && socket.readyState === WebSocket.OPEN) {
-            const message = {
-                type: "trackers",
-                trackers: TRACKERS.map((t, i) => ({
-                    id: t.id,
-                    position: trackers[i].position,
-                    rotation: trackers[i].rotation,
-                    visible: trackers[i].visible
-                }))
-            };
-            if (!sendHeadInput || sendHeadInput.checked) message.head = head;
-            socket.send(JSON.stringify(message));
-        }
-    }
+        stats.frames++;
+        if (stats.frames % 10 === 1) stats.brightness.push(measureBrightness());
+        if (!landmarks || !world) return;
 
-    startBtn.addEventListener("click", () => {
-        if (running) stop(); else init();
-    });
-
-    if (calibrateBtn) {
-        calibrateBtn.addEventListener("click", startCalibration);
-    }
-
-    if (smoothingInput) {
-        smoothingInput.addEventListener("input", () => {
-            filters = createFilters();
+        const fullBody = BODY_LANDMARKS.every(id => {
+            const p = landmarks[id];
+            return (p.visibility ?? 1) >= VISIBILITY_THRESHOLD &&
+                p.x > EDGE_MARGIN && p.x < 1 - EDGE_MARGIN &&
+                p.y > EDGE_MARGIN && p.y < 1 - EDGE_MARGIN;
         });
+        if (fullBody) stats.fullBodyFrames++;
+
+        // 머리 꼭대기는 코보다 약 10% 위에 있다고 보고 몸 전체 높이를 근사
+        const footY = Math.max(landmarks[L_ANKLE].y, landmarks[R_ANKLE].y);
+        stats.bodyHeights.push((footY - landmarks[NOSE].y) * 1.1);
+
+        for (const id of [L_ANKLE, R_ANKLE]) {
+            const [xs, ys, zs] = stats.ankles[id];
+            xs.push(world[id].x);
+            ys.push(world[id].y);
+            zs.push(world[id].z);
+        }
     }
 
-    function setWsStatus(text) {
-        if (wsStatus) wsStatus.textContent = text;
+    function gradeText(total) {
+        if (total >= 80) return "웹캠 풀바디 트래킹을 쓰기 좋은 환경입니다 👍";
+        if (total >= 60) return "쓸 수는 있지만, 아래 팁으로 환경을 개선하면 훨씬 안정적입니다.";
+        return "지금 환경에서는 웹캠 트래킹이 불안정할 가능성이 큽니다.";
     }
 
-    // 브라우저는 UDP(OSC)를 직접 보낼 수 없으므로 WebSocket으로 같은 PC의
-    // 브리지(vr-bridge/osc-bridge.js)에 보내고, 브리지가 VRChat OSC로 변환합니다.
-    if (wsBtn) {
-        wsBtn.addEventListener("click", () => {
-            if (socket) {
-                socket.close();
-                return;
-            }
-            const url = wsInput.value.trim() || wsInput.placeholder;
-            try {
-                socket = new WebSocket(url);
-            } catch (error) {
-                socket = null;
-                setWsStatus("WebSocket 주소가 올바르지 않습니다.");
-                return;
-            }
-            wsBtn.textContent = "연결 해제";
-            setWsStatus("브리지에 연결하는 중...");
-            socket.addEventListener("open", () => {
-                setWsStatus(`연결됨 — ${url} 로 트래커 데이터를 보내는 중`);
-            });
-            socket.addEventListener("close", () => {
-                socket = null;
-                wsBtn.textContent = "VR 월드 연결";
-                setWsStatus("연결 끊김 — 브리지 프로그램이 실행 중인지 확인하세요.");
-            });
-        });
+    function scoreClass(score) {
+        if (score >= 80) return "good";
+        if (score >= 60) return "ok";
+        return "bad";
     }
+
+    function showResult() {
+        const { metrics, total } = evaluate(stats);
+        const tips = metrics.filter(m => m.score < 80).map(m => `<li><strong>${m.label}</strong>: ${m.tip}</li>`);
+        const recs = recommend(headsetSelect ? headsetSelect.value : "none", total);
+
+        resultEl.innerHTML = `
+            <div class="fbt-total fbt-${scoreClass(total)}">
+                <span class="fbt-total-score">${total}</span><span>/ 100</span>
+            </div>
+            <p class="fbt-grade">${gradeText(total)}</p>
+            <ul class="fbt-metrics">
+                ${metrics.map(m => `
+                    <li>
+                        <div class="fbt-metric-head"><span>${m.label}</span><span>${m.value} · ${m.score}점</span></div>
+                        <div class="fbt-bar"><div class="fbt-bar-fill fbt-${scoreClass(m.score)}" style="width:${m.score}%"></div></div>
+                    </li>`).join("")}
+            </ul>
+            ${tips.length ? `<h4>개선 팁</h4><ul class="fbt-list">${tips.join("")}</ul>` : ""}
+            <h4>추천 프로그램</h4>
+            <ul class="fbt-list">${recs.map(r => `<li>${r}</li>`).join("")}</ul>
+            <p class="fbt-note">* 측정 결과는 환경 점검용 참고치이며, 실제 프로그램의 트래킹 품질을 보장하지 않습니다. 자세한 비교는 블로그의 <a href="#post-webcam-fbt">웹캠 풀바디 트래킹 비교 가이드</a>를 참고하세요.</p>
+        `;
+        resultEl.hidden = false;
+        setProgress(1);
+        setStatus("측정 완료!");
+    }
+
+    startBtn.addEventListener("click", start);
 })();

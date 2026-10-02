@@ -30,30 +30,47 @@
                 <h2>최신 글</h2>
                 <div class="post-list">
                     <article class="post-preview" id="post-webcam-fbt">
-                        <h3><a href="#post-webcam-fbt">VR 기기 없이 웹캠 하나로 풀 바디 트래킹(FBT) 하기</a></h3>
+                        <h3><a href="#post-webcam-fbt">2026 웹캠 풀바디 트래킹 완벽 비교: 트래커 없이 VRChat 전신 트래킹 하는 법</a></h3>
                         <p class="post-meta">2026년 10월 2일</p>
-                        <p class="post-excerpt">비싼 Vive 트래커 없이 노트북 웹캠 하나만으로 VRChat 같은 VR 월드에서 전신을 움직일 수 있을까요? AI 포즈 추정(Pose Estimation) 덕분에 충분히 가능합니다.</p>
+                        <p class="post-excerpt">Vive 트래커 없이 웹캠이나 헤드셋만으로 VRChat 풀바디 트래킹(FBT)을 할 수 있을까요? Driver4VR, Blobfish FBT, Virtual Desktop, SlimeVR까지 가격·방식·장단점을 한 번에 비교하고, 내 장비에 맞는 선택지를 정리했습니다.</p>
                         <details class="post-body">
                             <summary>전체 글 보기</summary>
-                            <p>AI 딥러닝 기술의 발전으로, 카메라 영상에서 사람의 관절 위치를 실시간으로 추정하는 <strong>포즈 추정(Pose Estimation)</strong> 기술을 활용한 소프트웨어들이 많이 나와 있습니다. 아래 <a href="#fullbody-tracker">AI 놀이터의 풀바디 트래킹 데모</a>에서 직접 체험해 볼 수 있고, 함께 제공하는 브리지 프로그램을 실행하면 이 데이터를 VRChat OSC 트래커로 보내 실제 VR 월드에서 아바타를 움직일 수 있습니다.</p>
-                            <h4>1. 웹캠 트래킹 추천 프로그램</h4>
+                            <p>풀바디 트래킹(FBT)은 아바타의 다리와 골반까지 내 몸처럼 움직이게 해 주는 기능입니다. 예전엔 수십만 원짜리 Vive 트래커와 베이스 스테이션이 필수였지만, 이제는 AI 포즈 추정 덕분에 <strong>웹캠 한 대</strong>나 <strong>헤드셋 자체 카메라</strong>로도 가능합니다. 문제는 선택지가 많고 한국어 정보가 거의 없다는 것. 이 글에서 한 번에 정리합니다.</p>
+
+                            <h4>한눈에 보는 비교표</h4>
+                            <div class="table-wrap">
+                                <table class="compare-table">
+                                    <thead><tr><th>프로그램</th><th>방식</th><th>가격</th><th>추천 대상</th></tr></thead>
+                                    <tbody>
+                                        <tr><td><strong>Blobfish FBT</strong></td><td>웹캠 · 브라우저</td><td>무료</td><td>설치 없이 일단 체험해 보고 싶은 사람</td></tr>
+                                        <tr><td><strong>Driver4VR</strong></td><td>웹캠/휴대폰 카메라 · 앱</td><td>약 $17 (일회)</td><td>웹캠 방식을 안정적으로 쓰고 싶은 사람, 퀘스트 단독 실행</td></tr>
+                                        <tr><td><strong>MediaPipe-VR-Fullbody-Tracking</strong></td><td>웹캠 · 오픈소스</td><td>무료</td><td>SteamVR 사용자, 설정에 자신 있는 사람</td></tr>
+                                        <tr><td><strong>Virtual Desktop</strong> 바디 트래킹</td><td>헤드셋 카메라 + AI 다리</td><td>앱 구매</td><td>Quest 3/3S 사용자 (웹캠 불필요)</td></tr>
+                                        <tr><td><strong>SlimeVR</strong></td><td>몸에 차는 IMU 트래커</td><td>약 $219~</td><td>정확도가 중요하고 예산이 있는 사람</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="post-refs">* 가격은 2026년 10월 기준 공식 페이지·스토어 정보이며 바뀔 수 있습니다. 이 밖에 macOS 전용 Fever, VTuber용 XR Animator·TDPT 등도 있습니다.</p>
+
+                            <h4>내 장비별 추천</h4>
                             <ul>
-                                <li><strong>Driver4VR (유료, Steam)</strong> — 가장 널리 쓰이고 초보자가 접근하기 쉽습니다. 'Webcam Deep Learning' 모드를 켜면 AI가 웹캠 속 뼈대를 분석해 VR 트래커 신호로 변환합니다. PC VR(SteamVR)은 물론 퀘스트 단독 구동(OSC 통신)도 지원합니다.</li>
-                                <li><strong>MediaPipe VR Fullbody Tracking (무료, 오픈소스)</strong> — 구글 MediaPipe 엔진 기반으로 GitHub에 공개된 프로그램입니다. 무료이고 가볍고 빠르지만, 다운로드 후 배치 파일(.bat)을 실행하는 등 초기 설정이 조금 복잡할 수 있습니다.</li>
+                                <li><strong>Quest 3 / 3S</strong>: 웹캠보다 먼저 <strong>Virtual Desktop 바디 트래킹</strong>을 써 보세요. 헤드셋 카메라로 상체를 추적하고 다리는 AI로 추정해 VRChat용 가상 트래커를 만들어 줍니다. 참고로 VRChat은 Meta의 생성형 다리를 직접 지원하지 않아서 이런 우회가 필요합니다.</li>
+                                <li><strong>Quest 2 / Pro</strong>: Virtual Desktop도 되지만 다리는 순수 AI 추정입니다. 실제로 다리를 움직이고 싶다면 <strong>Blobfish FBT(무료) → Driver4VR(유료)</strong> 순서로 시도하세요.</li>
+                                <li><strong>PC VR (Index, Vive 등)</strong>: 웹캠으로는 <strong>Driver4VR</strong>이나 <strong>MediaPipe-VR-Fullbody-Tracking</strong>, 확실한 품질을 원하면 <strong>SlimeVR</strong>.</li>
+                                <li><strong>방이 좁거나 어두운 경우</strong>: 웹캠 방식은 환경을 많이 탑니다. 카메라가 필요 없는 <strong>SlimeVR</strong>이 스트레스가 적습니다.</li>
                             </ul>
-                            <h4>2. 작동 및 연결 원리 (VRChat 예시)</h4>
+
+                            <h4>웹캠 방식, 사기 전에 꼭 확인할 것</h4>
                             <ol>
-                                <li><strong>카메라 배치</strong>: 웹캠이 머리부터 발끝까지 전신을 비출 수 있는 거리와 각도로 세팅합니다. 조명이 밝을수록 인식률이 올라갑니다.</li>
-                                <li><strong>데이터 변환</strong>: AI 트래킹 소프트웨어가 웹캠 인식을 시작하면 가상의 트래커(골반, 양발 등)가 생성됩니다.</li>
-                                <li><strong>VR 월드로 송신</strong>: PC VR 유저는 SteamVR 가상 드라이버(VMT 등)로 기기 신호를 직접 입력하고, 단독형 퀘스트 유저는 PC와 퀘스트를 같은 와이파이에 연결한 뒤 게임 내 OSC 기능으로 무선 전송합니다.</li>
+                                <li><strong>전신이 화면에 들어오는가</strong>: 카메라에서 2~3m, 머리부터 발끝까지 보여야 합니다. 발이 잘리면 다리 트래킹이 안 됩니다.</li>
+                                <li><strong>조명</strong>: 정면에서 밝게, 등 뒤 창문(역광)은 피하세요.</li>
+                                <li><strong>배경과 옷</strong>: 단순한 배경, 몸 윤곽이 보이는 옷이 떨림을 줄입니다.</li>
+                                <li><strong>한계 인정</strong>: 카메라가 1대라 뒤돌거나 손으로 발을 가리면 트래킹을 잃고, 전용 장비보다 반 박자 느립니다. 격렬한 춤보다는 앉기·서기·눕기 같은 일상 동작에 적합합니다.</li>
                             </ol>
-                            <h4>⚠️ 웹캠 방식의 한계</h4>
-                            <ul>
-                                <li><strong>시야각 제한(가림 현상)</strong>: 카메라가 1대뿐이라 몸을 돌리거나 손으로 발을 가리면 관절 위치를 잃어 아바타가 꼬일 수 있습니다. 가능하면 카메라 정면을 보고 움직이세요.</li>
-                                <li><strong>지연 시간과 떨림(Jittering)</strong>: 전용 장비에 비해 반 박자 느리고, 가만히 있어도 발이 미세하게 떨릴 수 있습니다. (데모에서는 One Euro 필터로 떨림을 줄여 봤습니다.)</li>
-                            </ul>
-                            <p><strong>결론</strong>: 격렬한 댄스에는 무리가 있지만, 장비 없이 앉거나 서서 다리를 움직이고 눕는 정도의 소통용으로는 가성비 최고의 방법입니다.</p>
-                            <p class="post-refs">참고: <a href="https://www.driver4vr.com" target="_blank" rel="noopener">Driver4VR</a> · <a href="https://github.com/ju1ce/Mediapipe-VR-Fullbody-Tracking" target="_blank" rel="noopener">Mediapipe-VR-Fullbody-Tracking</a> · <a href="https://github.com/MasonSakai/Iris-Full-Body-Tracking" target="_blank" rel="noopener">Iris Full Body Tracking</a> · <a href="https://kimono-oyaji.com/en/vrchat-fullbody-guide-01-en/" target="_blank" rel="noopener">VRChat Fullbody Guide</a></p>
+                            <p>👉 이 조건을 직접 확인하고 싶다면 AI 놀이터의 <a href="#fullbody-tracker"><strong>웹캠 풀바디 환경 진단기</strong></a>를 써 보세요. 10초 측정으로 전신 인식률·거리·조명·떨림·속도를 점수로 보여주고, 헤드셋에 맞는 프로그램을 추천해 줍니다. Driver4VR처럼 유료 프로그램을 사기 전에 내 환경이 적합한지 확인하는 용도로 좋습니다.</p>
+
+                            <p><strong>결론</strong>: Quest 3라면 Virtual Desktop부터, 그 외에는 무료 Blobfish FBT로 웹캠 방식이 내 환경에 맞는지 확인한 뒤 Driver4VR이나 SlimeVR로 넘어가는 것이 돈을 아끼는 순서입니다.</p>
+                            <p class="post-refs">참고: <a href="https://www.driver4vr.com" target="_blank" rel="noopener">Driver4VR</a> · <a href="https://tracking.blobfishman.xyz/" target="_blank" rel="noopener">Blobfish FBT</a> · <a href="https://github.com/ju1ce/Mediapipe-VR-Fullbody-Tracking" target="_blank" rel="noopener">Mediapipe-VR-Fullbody-Tracking</a> · <a href="https://www.uploadvr.com/virtual-desktop-quest-3-inside-out-body-tracking-vive-tracker-emulation/" target="_blank" rel="noopener">Virtual Desktop 바디 트래킹 (UploadVR)</a> · <a href="https://www.crowdsupply.com/slimevr/slimevr-full-body-tracker" target="_blank" rel="noopener">SlimeVR</a> · <a href="https://github.com/4firas/Fever" target="_blank" rel="noopener">Fever</a></p>
                         </details>
                     </article>
                     <!-- 예시 포스트 1 -->
@@ -96,43 +113,27 @@
                         <div id="webcam-container"></div>
                         <div id="label-container"></div>
                     </div>
-                    <!-- Webcam Full Body Tracking -->
+                    <!-- Webcam Full Body Tracking Check -->
                     <div class="tool-card tool-card-wide" id="fullbody-tracker">
-                        <h3>웹캠 풀바디 트래킹</h3>
-                        <p>VR 기기 없이 웹캠 하나로 전신 관절을 추적해 VR용 가상 트래커(골반·가슴·무릎·발) 위치를 계산합니다. 영상은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
-                        <button type="button" id="fbt-start-btn">Start</button>
+                        <h3>웹캠 풀바디 환경 진단기</h3>
+                        <p>유료 프로그램을 사기 전에, 내 방·내 웹캠·내 조명이 웹캠 풀바디 트래킹(FBT)에 적합한지 10초 만에 점검하세요. 영상은 브라우저 안에서만 분석되며 서버로 전송되지 않습니다.</p>
+                        <div class="fbt-setup">
+                            <label for="fbt-headset">사용 중인 VR 헤드셋</label>
+                            <select id="fbt-headset">
+                                <option value="quest3">Meta Quest 3 / 3S</option>
+                                <option value="quest2">Meta Quest 2 / Pro</option>
+                                <option value="pcvr">PC VR (Index, Vive, Pico 등)</option>
+                                <option value="none">아직 없음 / 잘 모름</option>
+                            </select>
+                            <button type="button" id="fbt-start-btn">진단 시작</button>
+                        </div>
                         <div class="fbt-stage">
                             <video id="fbt-video" playsinline muted></video>
                             <canvas id="fbt-canvas"></canvas>
                         </div>
-                        <p id="fbt-status" class="fbt-status">Start를 누르고 카메라에서 2~3m 떨어져 전신이 보이게 서 주세요.</p>
-                        <label class="fbt-control">떨림 보정
-                            <input type="range" id="fbt-smoothing" min="0" max="100" value="50">
-                        </label>
-                        <table class="fbt-table">
-                            <thead><tr><th>OSC 트래커</th><th>X (m)</th><th>Y (m)</th><th>Z (m)</th></tr></thead>
-                            <tbody id="fbt-tracker-body"></tbody>
-                        </table>
-                        <div class="fbt-vr">
-                            <h4>🥽 VR 월드(VRChat)로 보내기</h4>
-                            <ol>
-                                <li>이 PC에서 <a href="https://github.com/Puro-33/product-builder-lecture/tree/main/vr-bridge" target="_blank" rel="noopener">브리지 프로그램</a>을 실행합니다 (Node.js 필요).<br>
-                                    <code>node osc-bridge.js</code> — PC VR(SteamVR)<br>
-                                    <code>node osc-bridge.js --ip 퀘스트IP</code> — 퀘스트 단독 실행 (같은 와이파이)</li>
-                                <li>VRChat 액션 메뉴 → Options → OSC → <strong>Enabled</strong></li>
-                                <li>위에서 Start → 똑바로 서서 캘리브레이션 → 아래 <strong>VR 월드 연결</strong></li>
-                                <li>VRChat에서 풀바디 <strong>Calibrate</strong> (T자 자세)</li>
-                            </ol>
-                            <div class="input-container">
-                                <input type="text" id="fbt-ws-url" placeholder="ws://localhost:8765">
-                                <button type="button" id="fbt-ws-btn">VR 월드 연결</button>
-                            </div>
-                            <div class="fbt-vr-options">
-                                <label><input type="checkbox" id="fbt-send-head" checked> 머리 위치도 전송 (트래킹 공간 자동 정렬)</label>
-                                <button type="button" id="fbt-calibrate-btn">바닥 다시 맞추기</button>
-                            </div>
-                            <p id="fbt-ws-status" class="fbt-status"></p>
-                        </div>
+                        <div class="fbt-progress"><div id="fbt-progress-bar"></div></div>
+                        <p id="fbt-status" class="fbt-status">카메라에서 2~3m 떨어져 머리부터 발끝까지 보이게 선 뒤, 10초간 가만히 서 있으면 됩니다.</p>
+                        <div id="fbt-result" class="fbt-result" hidden></div>
                     </div>
                 </div>
             </section>
