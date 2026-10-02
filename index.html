@@ -29,6 +29,33 @@
             <section id="blog" class="content-section">
                 <h2>최신 글</h2>
                 <div class="post-list">
+                    <article class="post-preview" id="post-webcam-fbt">
+                        <h3><a href="#post-webcam-fbt">VR 기기 없이 웹캠 하나로 풀 바디 트래킹(FBT) 하기</a></h3>
+                        <p class="post-meta">2026년 10월 2일</p>
+                        <p class="post-excerpt">비싼 Vive 트래커 없이 노트북 웹캠 하나만으로 VRChat 같은 VR 월드에서 전신을 움직일 수 있을까요? AI 포즈 추정(Pose Estimation) 덕분에 충분히 가능합니다.</p>
+                        <details class="post-body">
+                            <summary>전체 글 보기</summary>
+                            <p>AI 딥러닝 기술의 발전으로, 카메라 영상에서 사람의 관절 위치를 실시간으로 추정하는 <strong>포즈 추정(Pose Estimation)</strong> 기술을 활용한 소프트웨어들이 많이 나와 있습니다. 아래 <a href="#fullbody-tracker">AI 놀이터의 풀바디 트래킹 데모</a>에서 직접 체험해 볼 수도 있습니다.</p>
+                            <h4>1. 웹캠 트래킹 추천 프로그램</h4>
+                            <ul>
+                                <li><strong>Driver4VR (유료, Steam)</strong> — 가장 널리 쓰이고 초보자가 접근하기 쉽습니다. 'Webcam Deep Learning' 모드를 켜면 AI가 웹캠 속 뼈대를 분석해 VR 트래커 신호로 변환합니다. PC VR(SteamVR)은 물론 퀘스트 단독 구동(OSC 통신)도 지원합니다.</li>
+                                <li><strong>MediaPipe VR Fullbody Tracking (무료, 오픈소스)</strong> — 구글 MediaPipe 엔진 기반으로 GitHub에 공개된 프로그램입니다. 무료이고 가볍고 빠르지만, 다운로드 후 배치 파일(.bat)을 실행하는 등 초기 설정이 조금 복잡할 수 있습니다.</li>
+                            </ul>
+                            <h4>2. 작동 및 연결 원리 (VRChat 예시)</h4>
+                            <ol>
+                                <li><strong>카메라 배치</strong>: 웹캠이 머리부터 발끝까지 전신을 비출 수 있는 거리와 각도로 세팅합니다. 조명이 밝을수록 인식률이 올라갑니다.</li>
+                                <li><strong>데이터 변환</strong>: AI 트래킹 소프트웨어가 웹캠 인식을 시작하면 가상의 트래커(골반, 양발 등)가 생성됩니다.</li>
+                                <li><strong>VR 월드로 송신</strong>: PC VR 유저는 SteamVR 가상 드라이버(VMT 등)로 기기 신호를 직접 입력하고, 단독형 퀘스트 유저는 PC와 퀘스트를 같은 와이파이에 연결한 뒤 게임 내 OSC 기능으로 무선 전송합니다.</li>
+                            </ol>
+                            <h4>⚠️ 웹캠 방식의 한계</h4>
+                            <ul>
+                                <li><strong>시야각 제한(가림 현상)</strong>: 카메라가 1대뿐이라 몸을 돌리거나 손으로 발을 가리면 관절 위치를 잃어 아바타가 꼬일 수 있습니다. 가능하면 카메라 정면을 보고 움직이세요.</li>
+                                <li><strong>지연 시간과 떨림(Jittering)</strong>: 전용 장비에 비해 반 박자 느리고, 가만히 있어도 발이 미세하게 떨릴 수 있습니다. (데모에서는 One Euro 필터로 떨림을 줄여 봤습니다.)</li>
+                            </ul>
+                            <p><strong>결론</strong>: 격렬한 댄스에는 무리가 있지만, 장비 없이 앉거나 서서 다리를 움직이고 눕는 정도의 소통용으로는 가성비 최고의 방법입니다.</p>
+                            <p class="post-refs">참고: <a href="https://www.driver4vr.com" target="_blank" rel="noopener">Driver4VR</a> · <a href="https://github.com/ju1ce/Mediapipe-VR-Fullbody-Tracking" target="_blank" rel="noopener">Mediapipe-VR-Fullbody-Tracking</a> · <a href="https://github.com/MasonSakai/Iris-Full-Body-Tracking" target="_blank" rel="noopener">Iris Full Body Tracking</a> · <a href="https://kimono-oyaji.com/en/vrchat-fullbody-guide-01-en/" target="_blank" rel="noopener">VRChat Fullbody Guide</a></p>
+                        </details>
+                    </article>
                     <!-- 예시 포스트 1 -->
                     <article class="post-preview">
                         <h3><a href="#">블로그 포스트 제목 예시 1</a></h3>
@@ -69,6 +96,32 @@
                         <div id="webcam-container"></div>
                         <div id="label-container"></div>
                     </div>
+                    <!-- Webcam Full Body Tracking -->
+                    <div class="tool-card tool-card-wide" id="fullbody-tracker">
+                        <h3>웹캠 풀바디 트래킹</h3>
+                        <p>VR 기기 없이 웹캠 하나로 전신 관절을 추적해 VR용 가상 트래커(골반·가슴·무릎·발) 위치를 계산합니다. 영상은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.</p>
+                        <button type="button" id="fbt-start-btn">Start</button>
+                        <div class="fbt-stage">
+                            <video id="fbt-video" playsinline muted></video>
+                            <canvas id="fbt-canvas"></canvas>
+                        </div>
+                        <p id="fbt-status" class="fbt-status">Start를 누르고 카메라에서 2~3m 떨어져 전신이 보이게 서 주세요.</p>
+                        <label class="fbt-control">떨림 보정
+                            <input type="range" id="fbt-smoothing" min="0" max="100" value="50">
+                        </label>
+                        <table class="fbt-table">
+                            <thead><tr><th>트래커</th><th>X (m)</th><th>Y (m)</th><th>Z (m)</th></tr></thead>
+                            <tbody id="fbt-tracker-body"></tbody>
+                        </table>
+                        <details class="fbt-advanced">
+                            <summary>고급: 트래커 데이터 내보내기 (WebSocket)</summary>
+                            <p>브라우저는 OSC(UDP)를 직접 보낼 수 없어, 트래커 좌표를 JSON으로 WebSocket에 스트리밍합니다. 로컬 브리지 프로그램에서 받아 VRChat OSC나 VMT로 전달하세요.</p>
+                            <div class="input-container">
+                                <input type="text" id="fbt-ws-url" placeholder="ws://localhost:8765">
+                                <button type="button" id="fbt-ws-btn">연결</button>
+                            </div>
+                        </details>
+                    </div>
                 </div>
             </section>
 
@@ -77,6 +130,7 @@
                 <!-- Formspree Form will go here -->
             </section>
 
+        <footer class="site-footer">
         <p>AI 놀이터 &copy; 2026. All Rights Reserved.</p>
         <p><a href="#privacy-policy">개인정보처리방침</a> | <a href="javascript:void(0)" onclick="googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Change Consent</a> | <a href="#contact">문의하기</a></p>
         <p>Email: contact@ai-playground.com (예시 이메일입니다)</p>
@@ -88,5 +142,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script src="main.js" type="module"></script>
+    <script src="fullbody.js" type="module"></script>
 </body>
 </html>

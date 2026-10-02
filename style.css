@@ -263,3 +263,94 @@ input[type="text"] {
         padding: 2rem;
     }
 }
+
+/* Blog Post Body */
+.post-body summary {
+    cursor: pointer;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.post-body h4 {
+    margin: 1.5rem 0 0.5rem;
+}
+
+.post-body li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.post-body a, .post-refs a {
+    color: var(--accent-color);
+}
+
+.post-refs {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* Webcam Full Body Tracking */
+.tool-card-wide {
+    grid-column: 1 / -1;
+}
+
+.fbt-stage {
+    position: relative;
+    margin: 1rem auto;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 4 / 3;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-color);
+    overflow: hidden;
+}
+
+#fbt-video {
+    display: none;
+}
+
+#fbt-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.fbt-status {
+    min-height: 1.5em;
+    opacity: 0.85;
+}
+
+.fbt-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.fbt-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 480px;
+    font-variant-numeric: tabular-nums;
+}
+
+.fbt-table th, .fbt-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fbt-table tr.fbt-lost td {
+    color: #ff6b6b;
+}
+
+.fbt-advanced {
+    margin-top: 1rem;
+    text-align: left;
+}
+
+.fbt-advanced summary {
+    cursor: pointer;
+    color: var(--accent-color);
+}
